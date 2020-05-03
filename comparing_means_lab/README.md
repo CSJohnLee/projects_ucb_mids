@@ -1,6 +1,6 @@
 # Comparing Means Lab
 A project utilizing statistics to compare means.  
-Objective: Address research questions on American National Election Studies (ANES) surveys about voters in United States. Determine what type of test is most appropriately utilized (parametric vs nonparametric, unpaired versus paired)
+Objective: Address research questions on American National Election Studies (ANES) surveys about voters in United States. Determine what type of test is most appropriately utilized for each question (parametric vs nonparametric, unpaired versus paired).
 
 #### Final Report: 
 - khandelwal_lee_lu_lab_2.pdf
