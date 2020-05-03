@@ -1,6 +1,6 @@
 # Reducing Crimes Lab
 A project utilizing Linear Regression to Model.  
-Objective: Examine a dataset of crime statistics to help a political campaign understand the determinants of crime and to generate policy suggestions that are applicable to local government. Create multi-variate linear regression models and determine if the classical linear assumptions are satisifed.
+Objective: Examine a dataset of crime statistics to help a political campaign understand the determinants of crime and to generate policy suggestions that are applicable to local government. Create multi-variate linear regression models and determine if the classical linear assumptions are satisfied.
 
 #### Final Report: 
 - khandelwal_lee_lu_lab_3_final.pdf
