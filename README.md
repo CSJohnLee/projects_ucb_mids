@@ -3,6 +3,7 @@ A self-selected sample of projects from UC Berkeley Masters in Information and D
 
 ## Applied Machine Learning - W207 Summer 2020
 1. house_price_predictions - Predicted housing prices with machine learning models.
+2. digit_classification - Classify digits with kNN and Naive Bayes.
 
 ## Statistics for Data Science - W203 Spring 2020
 1. comparing_means_lab - A project utilizing statistics to compare means.
