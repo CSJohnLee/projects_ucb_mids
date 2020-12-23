@@ -1,6 +1,9 @@
 # projects_ucb_mids repository
 A self-selected sample of projects from UC Berkeley Masters in Information and Data Science (MIDS) courses that demonstrates data science skill sets and knowledge.
 
+## Machine Learning at Scale - W261 Fall 2020
+1. flight_delays_prediction - Predicted flight delays with with machine learning models in Spark's parallel computing framework.  
+
 ## Applied Machine Learning - W207 Summer 2020
 1. house_price_predictions - Predicted housing prices with machine learning models.
 2. digit_classification - Classify digits with kNN and Naive Bayes.
