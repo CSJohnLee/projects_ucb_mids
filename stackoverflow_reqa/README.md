@@ -12,5 +12,3 @@ StackReQA_Stack Overflow Retrieval Question Answering.pptx
 StackReQA_AlyssaJohnSanjay.pdf
 
 
-
-https://docs.google.com/presentation/d/1hi7xf_9UxuG7_e1n8TSSkoI3qRV78HULg08lMpaYP9s/edit?usp=sharing
