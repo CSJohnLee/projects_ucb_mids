@@ -1,0 +1,120 @@
+---
+title: 'Pre-Experimental Survey Data Modeling'
+author: "John Lee w/ Help from Jaclyn Andrews, Alyssa Augsburger, Sanjay Saravanan"
+
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+```{r, include=FALSE}
+library("data.table")
+library("sandwich")
+library("lmtest")
+library("stargazer")
+```
+
+
+```{r}
+d <- fread("./data/survey_data.csv")  #read data
+d <- d[!is.na(outcome)]      #do not include rows with NA for outcome
+head(d)
+str(d)
+d[,hist(outcome)]
+d[,gender := ifelse(gender==5,'5_male',ifelse(gender==6,'6_female','9_declined'))]          #rename gender categories
+d[,marital := ifelse(marital==1,'1_single',ifelse(marital==2,'2_married','3_declined'))]    #rename marital categories
+head(d)
+
+```
+
+> **Log-Linear Models**
+
+```{r cards ols regression}
+z<- 1 #add to outcome to avoid log(0) error
+
+mod_1 <- d[,lm(log(outcome+z) ~ photo_quality)]
+#mod_2 <- d[,lm(log(outcome+z) ~ photo_quality + retail_price)]
+#mod_3 <- d[,lm(log(outcome+z) ~ photo_quality + retail_price + vacuum + factor(age) + factor(gender) + factor(marital) + factor(employment))]
+mod_4 <- d[,lm(log(outcome+z) ~ photo_quality + photo_quality*factor(gender) + photo_quality*factor(marital) + retail_price + vacuum + factor(age) + factor(gender) + factor(marital) + factor(employment))]
+mod_5 <- d[,lm(log(outcome+z) ~ photo_quality + photo_quality*retail_price + retail_price +  vacuum + factor(age) + factor(gender) + factor(marital) + factor(employment))]
+
+# add robust standard error
+mod_1_rse <- coeftest(mod_1, vcov. = vcovHC(mod_1))
+#mod_2_rse <- coeftest(mod_2, vcov. = vcovHC(mod_2))
+#mod_3_rse <- coeftest(mod_3, vcov. = vcovHC(mod_3))
+mod_4_rse <- coeftest(mod_4, vcov. = vcovHC(mod_4))
+mod_5_rse <- coeftest(mod_5, vcov. = vcovHC(mod_5))
+```
+
+```{r}
+#stargazer(
+#  mod_1, mod_2, mod_3,  
+#  type = 'text', column.labels = c("baseline", "item effects", "survey takers effects"))
+
+#stargazer(
+#  mod_4, mod_5,  
+#  type = 'text', column.labels = c("demographic HTEs", "price HTE"))
+
+#stargazer(
+#  mod_1_rse, mod_2_rse, mod_3_rse,  
+#  type = 'text', column.labels = c("baseline", "item effects", "survey takers effects"))
+
+#stargazer(
+#  mod_1_rse, mod_4_rse, mod_5_rse,  
+#  type = 'text', column.labels = c("simple", "demographic HTEs", "price HTE"),
+#  omit = c('age','employment', ':factor(gender)6female'),
+  #keep = c('retail_price'),
+#  dep.var.labels = "log(max bid + 1)")
+
+stargazer(
+  mod_1_rse, mod_4_rse, mod_5_rse,  
+  type = 'text', column.labels = c("[simple]", "[demographic HTEs]", "[price HTE]"),
+  omit = c('age','employment',":"),
+  #omit = c(8,9,10,11,12,13,14,15,16,17,18,19,20,21),
+  add.lines = list(c("Age", "No", "Yes","Yes"),c("Employment", "No", "Yes","Yes"),c("Gender Interaction", "No", "Yes","No"),c("Marital Interaction", "No", "Yes","No"), c('Retail Price Interaction', "No", "No","Yes")),
+  dep.var.labels = "log(max bid + 1)")
+
+```
+
+
+> **Group By's**
+
+```{r}
+#group by's
+head(d)
+
+#age, gender, marital, employment
+d[ ,
+  .(mean_bid = mean(outcome), count = .N),
+  keyby=age]
+
+d[ ,
+  .(mean_bid = mean(outcome), count = .N),
+  keyby=gender]
+
+d[ ,
+  .(mean_bid = mean(outcome), count = .N),
+  keyby=marital]
+
+d[ ,
+  .(mean_bid = mean(outcome), count = .N),
+  keyby=employment]
+
+
+```
+
+> **Experiment Item Sampling**
+
+```{r}
+#Sampled for phase 1 which 30 items to post first
+print(sample(c(1:100),30, replace=FALSE))
+
+#phase 2
+print(sample(c(1,4,5,6,8,9,10,11,12,13,14,19,20,22,24,26,28,29,31,33,34,35,36,37,39,40,43,44,
+  45,46,47,49,51,53,54,55,56,57,58,59,60,62,63,64,68,69,70,71,72,73,74,75,76,77,
+  78,81,82,83,84,87,88,89,90,91,95,97,99),30, replace=FALSE))
+
+#phase 3
+t<- c(1,5,6,8,9,12,14,28,29,34,35,36,43,44,47,49,53,54,56,62,63,68,69,72,74,75,76,77,78,81,82,84,87,88,97,100,101)
+print(sample(t, 30, replace=FALSE))
+```

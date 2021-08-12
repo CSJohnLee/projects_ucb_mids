@@ -1,0 +1,240 @@
+---
+title: 'Experiment Data Modeling'
+author: "John Lee w/ Help from Jaclyn Andrews, Alyssa Augsburger, Sanjay Saravanan"
+
+  output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+```{r, include=FALSE}
+library("data.table")
+library("sandwich")
+library("lmtest")
+library("stargazer")
+```
+
+
+```{r include=FALSE}
+#Raw Data
+d_raw <- fread("./data/FBMarketPlace_Data.csv")   #Read Data
+#head(d_raw)
+
+#Filtered Data
+d <- d_raw[,c('Seller','Item','Retail Price', 'Treatment Group', 'Phase', '# of Views', '# of Messages','# of Saves', '# of Shares', '# of Bids',  'Max Bid', 'Median Bid')]  
+#head(d)
+
+#Change Names
+setnames(
+  x = d,
+  old = c('Seller','Item', 'Retail Price', 'Treatment Group', 'Phase', '# of Views', '# of Messages','# of Saves', '# of Shares', '# of Bids',  'Max Bid', 'Median Bid'),
+  new = c('seller','item', 'retail_price', 'treatment',       'phase', 'views',     'messages',     'saves',      'shares',      'number_bids', 'max_bid', 'median_bid')
+)
+#head(d)
+
+#Change Column Type
+#str(d)
+d[,max_bid := as.integer(max_bid)]
+d[,median_bid := as.integer(median_bid)]
+d[,high_retail := retail_price > 50]
+d[,zero_bid := number_bids==0]
+#str(d)
+
+#Description of columns
+
+#'seller'__________name of seller
+#'item'____________name of item
+#'retail_price'____retail price of item
+#'treatment'_______control = 0 / treatment = 1
+#'phase'___________pilot = 0 / july 7 = 1 / july 14 = 2 / july 21 = 3
+#OUTCOMES BELOW:
+#'views'___________number of views when posting was removed
+#'messages'________number of messages when posting was removed
+#'saves'___________number of saves when posting was removed
+#'shares'__________number of shares when posting was removed
+#'number_bids'_____number of bids when posting was removed
+#'max_bid'_________max bid price when posting was removed
+#'median_bid'______median bid price when posting was removed
+#'high_retail'_____indicator for when retail_price > $50
+#'zero_bid'________indicator for when number_bids == 0 
+
+# variable to add to values to avoid log(0) error
+z<-1
+head(d)
+
+options(digits=3)  #max out on 3 decimals
+
+```
+
+> **Max Bid +1 (log-linear model)**
+
+```{r}
+#max bid as outcome
+z <-1
+max_bid_mod_1 = d[max_bid != "", lm(log(z+max_bid) ~ treatment )]
+max_bid_mod_3 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item))]
+max_bid_mod_4 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment)]
+#max_bid_mod_5 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment + zero_bid + zero_bid*treatment)]
+
+max_bid_mod_1_rse    <- coeftest(max_bid_mod_1, vcov. = vcovHC(max_bid_mod_1))
+max_bid_mod_3_rse    <- coeftest(max_bid_mod_3, vcov. = vcovHC(max_bid_mod_3))
+max_bid_mod_4_rse    <- coeftest(max_bid_mod_4, vcov. = vcovHC(max_bid_mod_4))
+#max_bid_mod_5_rse    <- coeftest(max_bid_mod_5, vcov. = vcovHC(max_bid_mod_5))
+
+stargazer(
+  max_bid_mod_1_rse,max_bid_mod_3_rse,max_bid_mod_4_rse,
+  type='text', 
+  column.labels = c("[Simple]", "[Seller&Item]", "[Seller&Item&High/LowRetail]"), 
+  omit=c("item"), 
+  add.lines = list(c("Item", "No", "Yes","Yes")),
+  dep.var.labels = "log(max bid + 1)"
+)
+
+```
+
+
+> **Max Bid + 0.001 (log-linear model)**
+
+```{r}
+#max bid as outcome
+z <-0.001
+max_bid_mod_1 = d[max_bid != "", lm(log(z+max_bid) ~ treatment )]
+max_bid_mod_3 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item))]
+max_bid_mod_4 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment)]
+#max_bid_mod_5 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment + zero_bid + zero_bid*treatment)]
+
+max_bid_mod_1_rse    <- coeftest(max_bid_mod_1, vcov. = vcovHC(max_bid_mod_1))
+max_bid_mod_3_rse    <- coeftest(max_bid_mod_3, vcov. = vcovHC(max_bid_mod_3))
+max_bid_mod_4_rse    <- coeftest(max_bid_mod_4, vcov. = vcovHC(max_bid_mod_4))
+#max_bid_mod_5_rse    <- coeftest(max_bid_mod_5, vcov. = vcovHC(max_bid_mod_5))
+
+stargazer(
+  max_bid_mod_1_rse,max_bid_mod_3_rse,max_bid_mod_4_rse,
+  type='text', 
+  column.labels = c("[Simple]", "[Seller&Item]", "[Seller&Item&High/LowRetail]"), 
+  omit=c("item"), 
+  add.lines = list(c("Item", "No", "Yes","Yes")),
+  dep.var.labels = "log(max bid + 0.001)"
+)
+
+```
+
+
+> **Max Bid +100 (log-linear model)**
+
+```{r}
+#max bid as outcome
+z <-100
+max_bid_mod_1 = d[max_bid != "", lm(log(z+max_bid) ~ treatment )]
+max_bid_mod_3 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item))]
+max_bid_mod_4 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment)]
+#max_bid_mod_5 = d[max_bid != "", lm(log(z+max_bid) ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment + zero_bid + zero_bid*treatment)]
+
+max_bid_mod_1_rse    <- coeftest(max_bid_mod_1, vcov. = vcovHC(max_bid_mod_1))
+max_bid_mod_3_rse    <- coeftest(max_bid_mod_3, vcov. = vcovHC(max_bid_mod_3))
+max_bid_mod_4_rse    <- coeftest(max_bid_mod_4, vcov. = vcovHC(max_bid_mod_4))
+#max_bid_mod_5_rse    <- coeftest(max_bid_mod_5, vcov. = vcovHC(max_bid_mod_5))
+
+stargazer(
+  max_bid_mod_1_rse,max_bid_mod_3_rse,max_bid_mod_4_rse,
+  type='text', 
+  column.labels = c("[Simple]", "[Seller&Item]", "[Seller&Item&High/LowRetail]"), 
+  omit=c("item"), 
+  add.lines = list(c("Item", "No", "Yes","Yes")),
+  dep.var.labels = "log(max bid + 100)"
+)
+
+```
+> **Max Bid (linear model)**
+
+```{r}
+
+max_bid_mod_1 = d[max_bid != "", lm(max_bid ~ treatment )]
+max_bid_mod_3 = d[max_bid != "", lm(max_bid ~ treatment + factor(seller) + factor(item))]
+max_bid_mod_4 = d[max_bid != "", lm(max_bid ~ treatment + factor(seller) + factor(item) +  high_retail*treatment)]
+max_bid_mod_5 = d[max_bid != "", lm(max_bid ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment + zero_bid + zero_bid*treatment)]
+
+max_bid_mod_1_rse    <- coeftest(max_bid_mod_1, vcov. = vcovHC(max_bid_mod_1))
+max_bid_mod_3_rse    <- coeftest(max_bid_mod_3, vcov. = vcovHC(max_bid_mod_3))
+max_bid_mod_4_rse    <- coeftest(max_bid_mod_4, vcov. = vcovHC(max_bid_mod_4))
+max_bid_mod_5_rse    <- coeftest(max_bid_mod_5, vcov. = vcovHC(max_bid_mod_5))
+
+stargazer(
+  max_bid_mod_1_rse,max_bid_mod_3_rse,max_bid_mod_4_rse,max_bid_mod_5_rse,
+  type='text', 
+  column.labels = c("[Simple]", "[Seller&Item]", "[Seller&Item&High/LowRetail]", "[Seller&Item&High/LowRetail&ZeroBid]"), 
+  omit=c("item"), 
+  add.lines = list(c("Item", "No", "Yes","Yes", "Yes")),
+  dep.var.labels = "max bid"
+)
+
+
+```
+
+> **Additional Models**
+
+
+```{r}
+head(d)
+
+number_bids_mod = d[number_bids != "", lm(number_bids ~ treatment + factor(seller) + factor(item) + high_retail + high_retail*treatment)]
+views_mod       = d[views != "", lm(views ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment)]
+messages_mod    = d[messages != "", lm(messages ~ treatment + factor(seller) + factor(item) +  high_retail + high_retail*treatment)]
+
+number_bids_mod_rse  <- coeftest(number_bids_mod, vcov. = vcovHC(number_bids_mod))
+views_mod_rse        <- coeftest(views_mod, vcov. = vcovHC(views_mod))
+messages_mod_rse     <- coeftest(messages_mod, vcov. = vcovHC(messages_mod))
+
+
+stargazer(
+  views_mod_rse,messages_mod_rse,number_bids_mod_rse,
+  type='text', 
+  column.labels = c("[# of Views]", "[# of Messages]", "[# of Offers]"),
+  omit=c("item", "seller"), 
+  add.lines = list(c("Item", "Yes", "Yes", "Yes"),c("Seller", "Yes", "Yes", "Yes"))
+)
+
+```
+
+> **Group-By's**
+
+```{r}
+# Some covariate balancing checks
+head(d)
+
+# Group by Phase
+d[views != "" & messages != "" & number_bids != "" & max_bid != "",
+  .(mean_views = mean(views), mean_messages = mean(messages), mean_number_of_bids = mean(number_bids), mean_max_bid=mean(max_bid)),
+  keyby=phase]
+
+# Group by Seller Mean
+d[views != "" & messages != "" & number_bids != "" & max_bid != "",
+  .(mean_views = mean(views), mean_messages = mean(messages), mean_number_of_bids = mean(number_bids), mean_max_bid=mean(max_bid)),
+  keyby=seller]
+
+# Group by Seller Sum
+d[views != "" & messages != "" & number_bids != "" & max_bid != "",
+  .(sum_views = sum(views), sum_messages = sum(messages), sum_number_of_bids = sum(number_bids), sum_max_bid=sum(max_bid)),
+  keyby=seller]
+
+
+#bal.tab(d_df, treat = d_df$treatment, disp = c("means", "sds"))#, stats = c("mean.diffs", "variance.ratios"))
+
+# Group by Item
+d[views != "" & messages != "" & number_bids != "" & max_bid != "",
+  .(mean_views = mean(views), mean_messages = mean(messages), mean_number_of_bids = mean(number_bids), mean_max_bid=mean(max_bid)),
+  keyby=item]
+
+
+# Group by Treatment Mean
+d[views != "" & messages != "" & number_bids != "" & max_bid != "",
+  .(mean_views = mean(views), mean_messages = mean(messages), mean_number_of_bids = mean(number_bids), mean_max_bid=mean(max_bid)),
+  keyby=treatment]
+
+# Group by Treatment Sum
+d[views != "" & messages != "" & number_bids != "" & max_bid != "",
+  .(sum_views = sum(views), sum_messages = sum(messages), sum_number_of_bids = sum(number_bids), sum_max_bid=sum(max_bid)),
+  keyby=treatment]
+
+```
