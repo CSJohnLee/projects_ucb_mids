@@ -6,7 +6,7 @@
 
 
 ## Slide Deck:
-W241 Final Project - Facebook Marketplace Experiment.pptx
+W241 Final Project - Facebook Marketplace Experiment.pdf
 
 ## Final Paper: 
 Final_Experiment_Report.pdf
