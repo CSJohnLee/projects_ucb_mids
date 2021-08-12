@@ -1,6 +1,9 @@
 # projects_ucb_mids repository
 A self-selected sample of projects from UC Berkeley Masters in Information and Data Science (MIDS) courses that demonstrates data science skill sets and knowledge.
 
+## Experiments and Causal Inference - W241 Summer 2021
+1. Effect of Image Quality on Facebook Marketplace Bidding - Conducted a randomized blocked experiment design to measure the treatment effect of a high versus low quality image on marketplace bidding.
+
 ## Natural Language Processing with Deep Learning - W266 Spring 2021
 1. stackoverflow_reqa - Used natural language processing algorithms to retrieve answers to Stack Overflow questions.
 
